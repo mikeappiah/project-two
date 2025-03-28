@@ -63,5 +63,4 @@ jobs:
             --application-name AppECS-project-two-cluster-project-two-service \
             --deployment-group-name DgpECS-project-two-cluster-project-two-service \
             --revision 'revisionType=S3,s3Location={bucket="project-two-appspec-bucket",key="appspec.yaml",bundleType="YAML"}' \
-            --deployment-style 'deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL' \
             --region ${{ secrets.AWS_REGION }}
