@@ -33,35 +33,35 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      # - name: Get latest Task Definition ARN
-      #   id: get-task-def
-      #   run: |
-      #     TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition next-app-task --query "taskDefinition.taskDefinitionArn" --region ${{ secrets.AWS_REGION }} --output text)
-      #     echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+      - name: Get latest Task Definition ARN
+        id: get-task-def
+        run: |
+          TASK_DEF_ARN=$(aws ecs describe-task-definition --task-definition project-two-task --query "taskDefinition.taskDefinitionArn" --region ${{ secrets.AWS_REGION }} --output text)
+          echo "TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
 
-      # - name: Create appspec.yaml
-      #   run: |
-      #     cat <<EOF > appspec.yaml
-      #     version: 0.0
-      #     Resources:
-      #       - TargetService:
-      #           Type: AWS::ECS::Service
-      #           Properties:
-      #             TaskDefinition: ${{ env.TASK_DEF_ARN }}
-      #             LoadBalancerInfo:
-      #               ContainerName: next-app
-      #               ContainerPort: 3000
-      #     EOF
+      - name: Create appspec.yaml
+        run: |
+          cat <<EOF > appspec.yaml
+          version: 0.0
+          Resources:
+            - TargetService:
+                Type: AWS::ECS::Service
+                Properties:
+                  TaskDefinition: ${{ env.TASK_DEF_ARN }}
+                  LoadBalancerInfo:
+                    ContainerName: project-two
+                    ContainerPort: 3000
+          EOF
 
-      # - name: Upload appspec.yaml to S3
-      #   run: |
-      #     aws s3 cp appspec.yaml s3://project-two-appspec-bucket/appspec.yaml
+      - name: Upload appspec.yaml to S3
+        run: |
+          aws s3 cp appspec.yaml s3://project-two-appspec-bucket/appspec.yaml
 
-      # - name: Trigger Blue-Green Deployment
-      #   run: |
-      #     aws deploy create-deployment \
-      #       --application-name AppECS-next-app-cluster-next-app-service \
-      #       --deployment-group-name DgpECS-next-app-cluster-next-app-service \
-      #       --revision 'revisionType=S3,s3Location={bucket="project-two-appspec-bucket",key="appspec.yaml",bundleType="YAML"}' \
-      #       --deployment-style 'deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL' \
-      #       --region ${{ secrets.AWS_REGION }}
+      - name: Trigger Blue-Green Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name AppECS-project-two-cluster-project-two-service \
+            --deployment-group-name DgpECS-project-two-cluster-project-two-service \
+            --revision 'revisionType=S3,s3Location={bucket="project-two-appspec-bucket",key="appspec.yaml",bundleType="YAML"}' \
+            --deployment-style 'deploymentType=BLUE_GREEN,deploymentOption=WITH_TRAFFIC_CONTROL' \
+            --region ${{ secrets.AWS_REGION }}
